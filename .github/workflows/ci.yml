@@ -49,7 +49,7 @@ jobs:
     continue-on-error: true   # УЧЕБНАЯ ФАЗА
     steps:
       - uses: actions/checkout@v4
-      - name: OSV-Scanner (SCA: CVE в зависимостях)
+      - name: "OSV-Scanner (SCA: CVE в зависимостях)"
         run: |
           docker run --rm -v "${PWD}:/src" ghcr.io/google/osv-scanner:v1.9.1 \
             --lockfile=/src/pom.xml --format=markdown || echo "osv findings, exit=$?"
