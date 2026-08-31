@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: knowledge-graph-api
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/kg}
+    username: ${DB_USER:kg}
+    password: ${DB_PASS:kg}
+  flyway:
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+# НАМЕРЕННАЯ УЯЗВИМОСТЬ: actuator открыт полностью (инфо-утечка)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+server:
+  port: 8080
