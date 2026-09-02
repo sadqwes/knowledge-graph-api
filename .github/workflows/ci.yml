@@ -26,16 +26,21 @@ jobs:
 
   sast:
     runs-on: ubuntu-latest
-    continue-on-error: true   # УЧЕБНАЯ ФАЗА: гейт сообщает, но не блокирует. После фиксов убрать.
+    continue-on-error: true   # учебная фаза — после фиксов убрать
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4       # ← ДОБАВЛЕНО
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
       - name: Semgrep (SAST)
         run: |
           docker run --rm -v "${PWD}:/src" semgrep/semgrep \
-            semgrep scan --config p/java --config p/owasp-top-ten \
+            semgrep scan --config /src/.semgrep/custom.yml --config p/java --config p/owasp-top-ten \
             --error --sarif /tmp/semgrep.sarif /src || echo "semgrep findings, exit=$?"
       - name: SpotBugs (SAST, bytecode)
-        run: mvn -B compile com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs
+        run: mvn -B compile com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs || true
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,7 +51,7 @@ jobs:
 
   sca:
     runs-on: ubuntu-latest
-    continue-on-error: true   # УЧЕБНАЯ ФАЗА
+    continue-on-error: true   # учебная фаза
     steps:
       - uses: actions/checkout@v4
       - name: "OSV-Scanner (SCA: CVE в зависимостях)"

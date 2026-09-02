@@ -1,0 +1,17 @@
+rules:
+  - id: kg-native-query-concat
+    languages: [java]
+    severity: ERROR
+    message: Possible SQL injection - concatenation inside createNativeQuery
+    patterns:
+      - pattern: $EM.createNativeQuery($A + $B, ...)
+
+  - id: kg-hardcoded-credential
+    languages: [java]
+    severity: WARNING
+    message: Hardcoded credential constant
+    patterns:
+      - pattern: public static final String $NAME = "...";
+      - metavariable-regex:
+          metavariable: $NAME
+          regex: .*(PASSWORD|TOKEN|SECRET).*
