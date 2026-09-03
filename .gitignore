@@ -3,3 +3,4 @@ target/
 .vscode/
 *.iml
 dependency-check-report.html
+semgrep.sarif

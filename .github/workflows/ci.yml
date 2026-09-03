@@ -34,20 +34,28 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
-      
-      - name: Semgrep (SAST)
+
+      # Прогон 1: человеко-читаемые findings прямо в лог джобы
+      - name: Semgrep (SAST) — findings в лог
         run: |
           docker run --rm -v "${PWD}:/src" semgrep/semgrep \
             semgrep scan --config /src/.semgrep/custom.yml \
                          --config p/java --config p/owasp-top-ten \
-                         --error --sarif --output /tmp/semgrep.sarif -- /src \
+                         --error -- /src \
             || echo "semgrep findings, exit=$?"
-      
-      - name: SpotBugs (SAST, bytecode)
+
+      # Прогон 2: SARIF-отчёт в артефакт (пишем в /src = смонтированный PWD!)
+      - name: Semgrep (SAST) — SARIF в артефакт
         run: |
-          mvn -B compile com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs \
-            -Dspotbugs.xmlOutput=false || echo "spotbugs findings"
-      
+          docker run --rm -v "${PWD}:/src" semgrep/semgrep \
+            semgrep scan --config /src/.semgrep/custom.yml \
+                         --config p/java --config p/owasp-top-ten \
+                         --sarif --output /src/semgrep.sarif -- /src \
+            || echo "sarif written"
+
+      - name: SpotBugs (SAST, bytecode)
+        run: mvn -B compile com.github.spotbugs:spotbugs-maven-plugin:4.8.6.2:spotbugs || true
+
       - name: Upload reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,7 +63,7 @@ jobs:
           name: sast-reports
           path: |
             target/spotbugsXml.xml
-            /tmp/semgrep.sarif
+            semgrep.sarif
 
   sca:
     runs-on: ubuntu-latest
