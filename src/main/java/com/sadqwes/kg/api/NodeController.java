@@ -1,3 +1,4 @@
+import jakarta.validation.Valid;
 package com.sadqwes.kg.api;
 
 import com.sadqwes.kg.config.AdminAuth;
@@ -23,6 +24,7 @@ public class NodeController {
 
     // НАМЕРЕННАЯ УЯЗВИМОСТЬ: нет Bean Validation на входе
     @PostMapping
+    public NodeEntity create(@Valid @RequestBody NodeDto dto) {
     public NodeEntity create(@RequestBody NodeEntity node) {
         return nodes.save(node);
     }
