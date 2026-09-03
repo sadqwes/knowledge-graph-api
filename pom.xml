@@ -74,10 +74,10 @@
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
         <version>4.8.6.2</version>
-      </plugin>
-    </plugins>
-  </build>
         <configuration>
           <excludeFilterFile>config/spotbugs-exclude.xml</excludeFilterFile>
         </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>

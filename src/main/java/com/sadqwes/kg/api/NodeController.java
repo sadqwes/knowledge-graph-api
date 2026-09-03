@@ -1,10 +1,9 @@
-import jakarta.validation.Valid;
 package com.sadqwes.kg.api;
 
 import com.sadqwes.kg.config.AdminAuth;
 import com.sadqwes.kg.model.NodeEntity;
 import com.sadqwes.kg.repo.NodeRepository;
-import org.apache.commons.text.WordUtils;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,36 +21,23 @@ public class NodeController {
         this.auth = auth;
     }
 
-    // НАМЕРЕННАЯ УЯЗВИМОСТЬ: нет Bean Validation на входе
+    @GetMapping
+    public List<NodeEntity> search(@RequestParam(required = false) String term) {
+        return term == null ? nodes.findAll() : nodes.findByNameContainingIgnoreCase(term);
+    }
+
     @PostMapping
     public NodeEntity create(@Valid @RequestBody NodeDto dto) {
-    public NodeEntity create(@RequestBody NodeEntity node) {
-        return nodes.save(node);
+        return nodes.save(new NodeEntity(dto.name(), dto.description(), dto.tags()));
     }
 
-    @GetMapping
-    public List<NodeEntity> list(@RequestParam(required = false) String term) {
-        return (term == null || term.isBlank())
-                ? nodes.findAll()
-                : nodes.findByNameContainingIgnoreCase(term);
-    }
-
-    @GetMapping("/{id}")
-    public NodeEntity get(@PathVariable Long id) {
-        NodeEntity node = nodes.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if (node.getDescription() != null) {
-            node.setDescription(WordUtils.wrap(node.getDescription(), 120));
-        }
-        return node;
-    }
-
+    // Admin-only endpoint: delete requires the admin token in the header.
+    // The token is injected from the environment (never hardcoded).
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable Long id,
-                       @RequestHeader(value = "X-Admin-Token", required = false) String token) {
+    public void delete(@PathVariable Long id, @RequestHeader(value = "X-Admin-Token", required = false) String token) {
         if (!auth.isAdmin(token)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "invalid admin token");
         }
         nodes.deleteById(id);
     }
