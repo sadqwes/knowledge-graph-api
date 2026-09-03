@@ -12,12 +12,12 @@ spring:
       ddl-auto: validate
     open-in-view: false
 
-# НАМЕРЕННАЯ УЯЗВИМОСТЬ: actuator открыт полностью (инфо-утечка)
+# SECURITY FIX: expose only health,info. "include: *" leaked /actuator/env,
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health,info
 
 # SECURITY FIX: admin token comes from the environment, never from code.
 # In the cluster it is provided via a Kubernetes Secret (ADMIN_TOKEN).
