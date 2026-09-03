@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!--
+      TRIAGE DECISION (policy-as-code):
+      EI_EXPOSE_REP / EI_EXPOSE_REP2 are suppressed for JPA entities and
+      Spring-managed components because:
+
+      1. JPA entities (EdgeEntity, NodeEntity) are mutable by design -
+         Hibernate mutates their state via reflection. Defensive copies
+         would break ORM lifecycle (dirty checking, proxy generation).
+
+      2. EntityManager in GraphService is injected by Spring and shared
+         across the application context. It is not "externally mutable"
+         in the security sense - it's a managed singleton.
+
+      Risk: LOW. These are false positives in the context of JPA/Spring.
+      If untrusted code directly manipulated these objects, EI_EXPOSE would
+      be a real concern. But our API layer validates input and does not
+      expose entity fields to user control.
+    -->
+    <Match>
+        <Class name="~com\.sadqwes\.kg\.model\..*"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+    <Match>
+        <Class name="com.sadqwes.kg.service.GraphService"/>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>
