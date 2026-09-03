@@ -24,7 +24,7 @@ public class GraphController {
 
     @GetMapping("/api/search")
     public List<NodeEntity> search(@RequestParam String term) {
-        return graphService.searchUnsafe(term);
+        return graphService.search(term);
     }
 
     @GetMapping("/api/path")

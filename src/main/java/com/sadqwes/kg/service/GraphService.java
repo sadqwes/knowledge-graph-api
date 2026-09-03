@@ -21,15 +21,20 @@ public class GraphService {
         this.em = em;
     }
 
-    // НАМЕРЕННАЯ УЯЗВИМОСТЬ (SAST/DAST-тренировка): SQL-инъекция через конкатенацию
+    // SECURITY FIX (CWE-89, SQL injection): user input is bound as a JDBC
+    // parameter instead of being concatenated into the SQL text, so the
+    // database treats the term strictly as data, never as executable SQL.
     @SuppressWarnings("unchecked")
-    public List<NodeEntity> searchUnsafe(String term) {
+    public List<NodeEntity> search(String term) {
         return em.createNativeQuery(
-                        "SELECT * FROM nodes WHERE name ILIKE '%" + term + "%'",
+                        "SELECT * FROM nodes WHERE name ILIKE :term",
                         NodeEntity.class)
+                .setParameter("term", "%" + term + "%")
                 .getResultList();
     }
 
+    // Breadth-first search for the shortest path between two nodes.
+    // Edges are treated as undirected for path-finding purposes.
     public List<NodeEntity> shortestPath(Long fromId, Long toId) {
         Map<Long, List<Long>> adj = new HashMap<>();
         for (EdgeEntity e : edges.findAll()) {

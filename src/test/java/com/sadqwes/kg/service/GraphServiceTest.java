@@ -35,4 +35,16 @@ class GraphServiceTest {
         assertEquals("restore", path.get(0).getName());
         assertEquals("mc-mirror", path.get(2).getName());
     }
+
+    // SECURITY REGRESSION TEST: an injection payload must be treated as
+    // literal data. With the old concatenation-based query this input
+    // altered SQL semantics; with a parameterized query it matches nothing.
+    @Test
+    void searchTreatsInjectionPayloadAsLiteralData() {
+        nodes.save(new NodeEntity("velero", "backup tool", "dr"));
+
+        List<NodeEntity> result = graphService.search("vel' OR '1'='1");
+
+        assertEquals(0, result.size());
+    }
 }
