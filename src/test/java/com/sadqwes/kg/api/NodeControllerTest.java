@@ -32,6 +32,8 @@ class NodeControllerTest {
                 .andExpect(jsonPath("$[0].name").value("velero"));
     }
 
+    // Admin token is injected from config (test value: test-admin-token).
+    // Without the token the endpoint must fail closed with 403.
     @Test
     void deleteRequiresAdminToken() throws Exception {
         NodeEntity n = repo.save(new NodeEntity("temp", null, null));
@@ -39,7 +41,7 @@ class NodeControllerTest {
         mvc.perform(delete("/api/nodes/" + n.getId()))
                 .andExpect(status().isForbidden());
 
-        mvc.perform(delete("/api/nodes/" + n.getId()).header("X-Admin-Token", "kg-admin-2026"))
+        mvc.perform(delete("/api/nodes/" + n.getId()).header("X-Admin-Token", "test-admin-token"))
                 .andExpect(status().isNoContent());
     }
 }
